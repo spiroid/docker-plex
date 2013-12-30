@@ -32,8 +32,8 @@ RUN apt-get install -y plexmediaserver
 
 # Create configuration directory
 RUN mkdir -p $PLEX_HOME
-ADD start.sh $PLEX_HOME/start.sh
+ADD resources/usr/local/bin/pms.sh /usr/local/bin/pms.sh
 
 
 # Command to launch when container is started
-ENTRYPOINT ["/usr/local/share/plex/start.sh"]
+ENTRYPOINT ["/usr/local/bin/pms.sh"]
