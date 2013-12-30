@@ -2,13 +2,38 @@
 
 ## Description
 
-This is a Dockerfile to set up [Plex Media Server](http://www.plexapp.com/).
+[Docker](http://docker.io) image for [Plex Media Server](http://www.plexapp.com/). It is a fork of [@aostanin](https://github.com/aostanin/) [docker-plex](https://github.com/aostanin/docker-plex) repository, with some updates.
+
+The main changes are:
+ * Debian as base image instead of ubuntu
+ * Install directory in the container located in /usr/local/share/plex
+ * Add an environment variable `PLEX_HOME` that points to the plex main directory
+
+
+Please check the git log for more details.
+
+This repository comes with a Dockerfile to set up the image.
+
+
+## Getting stared
+
+### Requirements
+ * [Git](http://git-scm.com/)
+ * [Docker](http://docker.io)
+
+### Get the source code
+```
+  $ git clone git@github.com:spiroid/docker-plex.git
+  $ cd docker-plex
+```
 
 ## Usage
 
 ### Building
 
-Build the image with `docker build -t plex .` in this directory.
+Build the image with `docker build -t <your pseudo>/plex .` in this directory.
+
+replace `<your pseudo>` by a prefix you want to appear in your local docker image registry.
 
 
 ### Running
@@ -40,23 +65,23 @@ Docker allows you to overwrite the container's LXC configuration using `-lxc-con
 
 The following starts the plex container with:
 
-- The host's `/srv/media/videos` mounted inside the container's `/videos`
-- The host's `/srv/media/music` mounted inside the container's `/music`
-- The host's `/tank/virt/config/plex` mounted inside the container's `/config` for persistent configuration storage.
+- The host's `/srv/media/videos` mounted inside the container's `/srv/videos`
+- The host's `/srv/media/music` mounted inside the container's `/srv/music`
+- The host's `/home/spiroid/config/plex` mounted inside the container's `/usr/local/share/plex` for persistent configuration storage.
 - No network management from docker (`-n=false`)
 - Bridged networking using the `br0` bridge with an IP address of `192.168.1.10` and gateway of `192.168.1.1`
 
 ```
 docker run -d -n=false \
-  -v /srv/media/videos:/videos \
-  -v /srv/media/music:/music \
-  -v /tank/virt/config/plex:/config \
+  -v /srv/media/videos:/srv/videos \
+  -v /srv/media/music:/srv/music \
+  -v /home/spiroid/config/plex:/usr/local/share/plex \
   -lxc-conf="lxc.network.type = veth" \
   -lxc-conf="lxc.network.flags = up" \
   -lxc-conf="lxc.network.link = br0" \
   -lxc-conf="lxc.network.ipv4 = 192.168.1.10" \
   -lxc-conf="lxc.network.ipv4.gateway=192.168.1.1" \
-  plex
+  <your pseudo>/plex
 ```
 
 Now just navigate to `http://192.168.1.10:32400/web/` to set up Plex.
