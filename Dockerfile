@@ -1,21 +1,39 @@
-FROM ubuntu:precise
+FROM tianon/debian:jessie
 
-RUN apt-get update
+MAINTAINER Jonathan Dray <jonathan.dray+docker@gmail.com>
 
-RUN apt-get install -y language-pack-en
-ENV LANG en_US.UTF-8
 
+# Debian update package information
+ENV DEBIAN_FRONTEND noninteractive
+RUN sed -i 's/ftp.us/ftp.fr/g' /etc/apt/sources.list
+RUN apt-get -y update
+
+
+# System locales configuration
+RUN apt-get install -y --no-install-recommends locales
+RUN echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
+ENV LANG fr_FR.UTF-8
+
+
+# Install requirements
 RUN apt-get install -y curl
 
-RUN echo "deb http://plex.r.worldssl.net/PlexMediaServer/ubuntu-repo lucid main" >> /etc/apt/sources.list
-RUN curl http://plexapp.com/plex_pub_key.pub | apt-key add -
-RUN apt-get update
 
+# Add plex repository information and update apt cache
+RUN echo "deb http://shell.ninthgate.se/packages/debian wheezy main" > /etc/apt/sources.list.d/plexmediaserver.list
+RUN curl http://shell.ninthgate.se/packages/shell-ninthgate-se-keyring.key | apt-key add -
+RUN apt-get -y update
+
+
+# Install plex media server
+ENV PLEX_HOME /usr/local/share/plex
 RUN apt-get install -y plexmediaserver
-RUN mkdir -p /config
 
-ADD start.sh /start.sh
 
-#EXPOSE 32400
+# Create configuration directory
+RUN mkdir -p $PLEX_HOME
+ADD start.sh $PLEX_HOME/start.sh
 
-ENTRYPOINT ["/start.sh"]
+
+# Command to launch when container is started
+ENTRYPOINT ["/usr/local/share/plex/start.sh"]
