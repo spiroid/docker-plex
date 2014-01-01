@@ -16,7 +16,17 @@ ENV LANG fr_FR.UTF-8
 
 
 # Install requirements
-RUN apt-get install -y curl
+RUN apt-get install -y --no-install-recommends curl wget
+
+
+# Install network utilities
+RUN apt-get install -y --no-install-recommends net-tools iputils-ping iptables
+
+
+# Install pipework
+RUN cd /usr/local/bin &&\
+    wget --no-check-certificate https://raw.github.com/jpetazzo/pipework/master/pipework &&\
+    chmod +x pipework
 
 
 # Add plex repository information and update apt cache
@@ -36,4 +46,10 @@ ADD resources/usr/local/bin/pms.sh /usr/local/bin/pms.sh
 
 
 # Command to launch when container is started
-ENTRYPOINT ["/usr/local/bin/pms.sh"]
+CMD \
+    echo Setting up iptables... &&\
+    iptables -t nat -A POSTROUTING -j MASQUERADE &&\
+    echo Waiting for pipework to give us the eth1 interface... &&\
+    pipework --wait &&\
+    echo Starting Plex Media Server &&\
+    /usr/local/bin/pms.sh
